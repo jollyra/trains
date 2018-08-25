@@ -1,22 +1,36 @@
 #!/usr/bin/env python3
 
 
-from collections import namedtuple
+def print_E(E):
+    for edge, weight in E.items():
+        print('{}: {}'.format(edge, weight))
 
 
-Edge = namedtuple('Edge', ['src', 'dest', 'weight'])
+def parse_E(line):
+    E = {}
+    for edge in line.split(','):
+        edge = edge.strip()
+        E[(edge[0], edge[1])] = int(edge[2:])
+    return E
 
 
-def parse_edge(string):
-    return Edge(src=string[0], dest=string[1], weight=int(string[2:]))
-
-
-def parse_edge_list(line):
-    return [parse_edge(edge.strip()) for edge in line.split(',')]
+def weight(E, path):
+    weight = 0
+    for i in range(len(path) - 1):
+        e = (path[i], path[i + 1])
+        if e in E:
+            weight += E[e]
+        else:
+            return None
+    return weight
 
 
 if __name__ == '__main__':
-    E = parse_edge_list('AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7')
+    E = parse_E('AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7')
+    print_E(E)
 
-    for e in E:
-        print(e)
+    assert weight(E, ['A', 'B', 'C']) == 9
+    assert weight(E, ['A', 'D']) == 5
+    assert weight(E, ['A', 'D', 'C']) == 13
+    assert weight(E, ['A', 'E', 'B', 'C', 'D']) == 22
+    assert weight(E, ['A', 'E', 'D']) is None
