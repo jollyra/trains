@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 
-from collections import deque
+from collections import deque, defaultdict
+from heapq import heappush, heappop
 
 
 cat = ''.join
+BIG = 10 ** 999
 
 
 def trace(func):
@@ -56,6 +58,30 @@ def bfs_paths(E, src, dest, max_depth, min_depth=1):
     return paths
 
 
+def resolve_path(prev, v):
+    if v is None:
+        return []
+    else:
+        return resolve_path(prev, prev[v]) + [v]
+
+
+def dijkstras_search(E, src, dest):
+    cost = defaultdict(lambda: BIG)
+    cost[src] = 0
+    prev = {src: None}
+    horizon = [(0, src)]
+    while horizon:
+        (u_cost, u) = heappop(horizon)
+        if u == dest:
+            return dict(cost=cost[dest], path=resolve_path(prev, dest))
+        for edge in [edge for edge in E if edge[0] == u]:
+            if cost[edge[0]] + E[edge] < cost[edge[1]]:
+                heappush(horizon, (cost[edge[0]] + E[edge], edge[1]))
+                cost[edge[1]] = cost[edge[0]] + E[edge]
+                prev[edge[1]] = edge[0]
+    return None
+
+
 if __name__ == '__main__':
     E = parse_E('AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7')
     print_E(E)
@@ -76,3 +102,12 @@ if __name__ == '__main__':
     paths = bfs_paths(E, 'A', 'C', 4, min_depth=4)
     assert len(paths) == 3
     print('paths from A to C where depth is 4: {}'.format([cat(path) for path in paths]))
+
+    # Exercise 8
+    print(dijkstras_search(E, 'A', 'C'))
+
+    # Exercise 9
+    print(dijkstras_search(E, 'B', 'B'))
+
+    E = parse_E('AB4, AC2, BC3, CB1, BD2, BE3, CD4, CE5, ED1')
+    print(dijkstras_search(E, 'A', 'D'))
